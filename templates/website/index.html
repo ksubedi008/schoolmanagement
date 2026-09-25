@@ -1,0 +1,59 @@
+{% extends 'layout_public.html' %}
+{% load static %}
+
+{% block content %}
+<main>
+    <section class="hero">
+        <h1>Excellence in Education</h1>
+        <p>A premier institution dedicated to academic achievement, character development, and future-ready skills. We nurture the leaders of tomorrow through holistic learning.</p>
+        
+        <div style="display: flex; gap: 2rem; justify-content: center; margin-top: 2rem; flex-wrap: wrap;">
+            <div style="background: var(--surface-color); padding: 1rem 1.5rem; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
+                <div style="font-weight: 800; font-size: 1.5rem; color: var(--primary-color);">Established</div>
+                <div style="color: var(--text-secondary); font-size: 0.9rem;">Since 1995</div>
+            </div>
+            <div style="background: var(--surface-color); padding: 1rem 1.5rem; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
+                <div style="font-weight: 800; font-size: 1.5rem; color: var(--primary-color);">1,500+</div>
+                <div style="color: var(--text-secondary); font-size: 0.9rem;">Enrolled Students</div>
+            </div>
+            <div style="background: var(--surface-color); padding: 1rem 1.5rem; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
+                <div style="font-weight: 800; font-size: 1.5rem; color: var(--primary-color);">50+</div>
+                <div style="color: var(--text-secondary); font-size: 0.9rem;">Expert Teachers</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div style="text-align: center; margin-bottom: 4rem;">
+            <h2>Why Evergreen Academy?</h2>
+            <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto;">Our School Management System brings everyone together—administration, teachers, students, and parents.</p>
+        </div>
+        
+        <div class="grid-3" style="max-width: 1200px; margin: 0 auto;">
+            <div class="card" style="text-align: center; padding: 3rem 2rem;">
+                <div style="width: 64px; height: 64px; background: var(--primary-light); color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--spacing-lg);">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                </div>
+                <h3>Role-Based Access</h3>
+                <p style="margin-top: var(--spacing-md);">Dedicated dashboards for Admins, Principals, Accountants, Teachers, and Students securely isolated.</p>
+            </div>
+            
+            <div class="card" style="text-align: center; padding: 3rem 2rem;">
+                <div style="width: 64px; height: 64px; background: var(--primary-light); color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--spacing-lg);">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                </div>
+                <h3>Live Timetables</h3>
+                <p style="margin-top: var(--spacing-md);">Students and Teachers can view real-time class schedules and immediate updates on substitutions.</p>
+            </div>
+            
+            <div class="card" style="text-align: center; padding: 3rem 2rem;">
+                <div style="width: 64px; height: 64px; background: var(--primary-light); color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto var(--spacing-lg);">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                </div>
+                <h3>Analytics & Tracking</h3>
+                <p style="margin-top: var(--spacing-md);">Monitor attendance, fee collection, and academic performance through beautiful visual widgets.</p>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}

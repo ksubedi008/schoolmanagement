@@ -1,0 +1,40 @@
+{% extends 'layout_auth.html' %}
+
+{% block content %}
+<div class="auth-card">
+    <div class="auth-brand">
+        <div class="brand-logo">S</div>
+        <div class="brand-text">SMS Portal</div>
+    </div>
+    
+    <div style="text-align: center; margin-bottom: var(--spacing-xl);">
+        <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Welcome Back</h2>
+        <p style="color: var(--text-secondary);">Please enter your details to sign in.</p>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+            <div style="color: #ef4444; margin-bottom: var(--spacing-md); padding: var(--spacing-sm); background: rgba(239, 68, 68, 0.1); border-radius: var(--border-radius-sm); font-size: 0.875rem;">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="id_username" class="form-label">Username</label>
+            <input type="text" name="username" id="id_username" class="form-control" placeholder="Enter your username" required autofocus>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: var(--spacing-xl);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-xs);">
+                <label for="id_password" class="form-label" style="margin-bottom: 0;">Password</label>
+                <a href="#" style="font-size: 0.75rem; font-weight: 600;">Forgot password?</a>
+            </div>
+            <input type="password" name="password" id="id_password" class="form-control" placeholder="••••••••" required>
+        </div>
+        
+        <button type="submit" class="btn btn-block">Sign In to Account</button>
+    </form>
+</div>
+{% endblock %}

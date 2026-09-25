@@ -1,0 +1,114 @@
+{% extends 'layout.html' %}
+
+{% block title %}Admin Dashboard | SMS{% endblock %}
+{% block page_title %}Admin Overview{% endblock %}
+
+{% block content %}
+<div class="grid-3">
+    <div class="card">
+        <h3 class="card-title">Total Students</h3>
+        <div class="stat-value">1,245</div>
+        <p style="color: var(--text-secondary); margin-top: var(--spacing-sm);">+12% from last year</p>
+    </div>
+    
+    <div class="card">
+        <h3 class="card-title">Active Staff</h3>
+        <div class="stat-value">84</div>
+        <p style="color: var(--text-secondary); margin-top: var(--spacing-sm);">Teaching & Administration</p>
+    </div>
+    
+    <div class="card">
+        <h3 class="card-title">Revenue (YTD)</h3>
+        <div class="stat-value">$452K</div>
+        <p style="color: var(--text-secondary); margin-top: var(--spacing-sm);">Fees & Contributions</p>
+    </div>
+</div>
+
+<h3 style="margin: 2rem 0 1rem; color: var(--text-primary);">Administrative Modules</h3>
+<div class="grid-3" style="margin-bottom: 2rem;">
+    <a href="{% url 'dashboard:admin_users' %}" class="card" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; padding: 1.5rem;">
+        <div style="width: 48px; height: 48px; background: var(--primary-light); color: var(--primary-color); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </div>
+        <div>
+            <div style="font-weight: 700; color: var(--text-primary); font-size: 1.1rem;">User & Access</div>
+            <div style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px;">Roles, Passwords, Permissions</div>
+        </div>
+    </a>
+    
+    <a href="{% url 'dashboard:admin_students' %}" class="card" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; padding: 1.5rem;">
+        <div style="width: 48px; height: 48px; background: var(--primary-light); color: var(--primary-color); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
+        <div>
+            <div style="font-weight: 700; color: var(--text-primary); font-size: 1.1rem;">Student Mgmt</div>
+            <div style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px;">Admissions, Promotions, Profiles</div>
+        </div>
+    </a>
+
+    <a href="{% url 'dashboard:admin_staff' %}" class="card" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; padding: 1.5rem;">
+        <div style="width: 48px; height: 48px; background: var(--primary-light); color: var(--primary-color); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path></svg>
+        </div>
+        <div>
+            <div style="font-weight: 700; color: var(--text-primary); font-size: 1.1rem;">Staff & Teachers</div>
+            <div style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px;">Assignments, Workloads, Accounts</div>
+        </div>
+    </a>
+    
+    <a href="{% url 'dashboard:admin_academic' %}" class="card" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; padding: 1.5rem;">
+        <div style="width: 48px; height: 48px; background: var(--primary-light); color: var(--primary-color); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+        </div>
+        <div>
+            <div style="font-weight: 700; color: var(--text-primary); font-size: 1.1rem;">Academic Config</div>
+            <div style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px;">Terms, Grading, Classes, Subjects</div>
+        </div>
+    </a>
+    
+    <a href="{% url 'dashboard:admin_parents' %}" class="card" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; padding: 1.5rem;">
+        <div style="width: 48px; height: 48px; background: var(--primary-light); color: var(--primary-color); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+        </div>
+        <div>
+            <div style="font-weight: 700; color: var(--text-primary); font-size: 1.1rem;">Parents</div>
+            <div style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px;">Link accounts, Guardians</div>
+        </div>
+    </a>
+
+    <a href="{% url 'dashboard:admin_system' %}" class="card" style="text-decoration: none; display: flex; align-items: center; gap: 1rem; padding: 1.5rem;">
+        <div style="width: 48px; height: 48px; background: var(--primary-light); color: var(--primary-color); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </div>
+        <div>
+            <div style="font-weight: 700; color: var(--text-primary); font-size: 1.1rem;">System Settings</div>
+            <div style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px;">Profile, Backups, Notifications</div>
+        </div>
+    </a>
+</div>
+
+<div class="card">
+    <h3 class="card-title">Recent Activity</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-top: var(--spacing-md);">
+        <thead>
+            <tr style="text-align: left; border-bottom: 2px solid var(--border-color);">
+                <th style="padding: var(--spacing-sm) 0;">Action</th>
+                <th style="padding: var(--spacing-sm) 0;">User</th>
+                <th style="padding: var(--spacing-sm) 0;">Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: var(--spacing-sm) 0;">Fee payment received</td>
+                <td style="padding: var(--spacing-sm) 0;">John Doe (Parent)</td>
+                <td style="padding: var(--spacing-sm) 0;">10 mins ago</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: var(--spacing-sm) 0;">New student enrolled</td>
+                <td style="padding: var(--spacing-sm) 0;">Admin</td>
+                <td style="padding: var(--spacing-sm) 0;">1 hour ago</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

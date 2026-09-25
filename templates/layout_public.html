@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}School Management System{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script>
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    </script>
+    <style>
+        /* Public specific styles */
+        .public-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md) var(--spacing-2xl);
+            background: color-mix(in srgb, var(--bg-color) 85%, transparent);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .hero {
+            padding: 8rem var(--spacing-2xl) 5rem;
+            text-align: center;
+            background: linear-gradient(180deg, var(--primary-light) 0%, var(--bg-color) 100%);
+            min-height: 70vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: var(--spacing-md);
+            background: linear-gradient(135deg, var(--primary-color), #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            max-width: 600px;
+            margin: 0 auto var(--spacing-xl);
+            color: var(--text-secondary);
+        }
+
+        .features {
+            padding: 5rem var(--spacing-2xl);
+            background-color: var(--bg-color);
+        }
+
+        .footer {
+            background-color: var(--surface-color);
+            padding: var(--spacing-xl) var(--spacing-2xl);
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    
+    <nav class="public-nav">
+        <div class="auth-brand" style="margin: 0;">
+            <div class="brand-logo">S</div>
+            <div class="brand-text">Evergreen Academy</div>
+        </div>
+        
+        <div style="display: flex; gap: var(--spacing-md); align-items: center;">
+            <button id="theme-toggle-btn" class="theme-toggle" aria-label="Toggle Theme">
+                <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            </button>
+            <a href="{% url 'accounts:login' %}" class="btn">Login to Portal</a>
+        </div>
+    </nav>
+
+    {% block content %}{% endblock %}
+
+    <footer class="footer" style="padding-top: 4rem; padding-bottom: 2rem;">
+        <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; text-align: left; margin-bottom: 3rem;">
+            <div>
+                <div class="auth-brand" style="margin: 0 0 1rem 0; justify-content: flex-start;">
+                    <div class="brand-logo" style="width: 32px; height: 32px; font-size: 16px;">S</div>
+                    <div class="brand-text" style="font-size: 1.25rem;">Evergreen Academy</div>
+                </div>
+                <p style="font-size: 0.9rem;">Nurturing the leaders of tomorrow through holistic education and modern learning environments.</p>
+            </div>
+            
+            <div>
+                <h4 style="margin-bottom: 1rem;">Contact Us</h4>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.5rem; font-size: 0.9rem;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    +1 (555) 123-4567
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.5rem; font-size: 0.9rem;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    <a href="mailto:info@evergreenacademy.edu.dummy" style="color: var(--text-secondary);">info@evergreenacademy.edu</a>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.9rem;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0; margin-top: 2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    123 Education Boulevard, <br>Springfield, IL 62701, USA
+                </div>
+            </div>
+            
+            <div>
+                <h4 style="margin-bottom: 1rem;">Social Connect</h4>
+                <div style="display: flex; gap: 1rem;">
+                    <!-- Facebook -->
+                    <a href="#" aria-label="Facebook" style="width: 40px; height: 40px; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-color);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                    </a>
+                    <!-- Twitter/X (Dummy) -->
+                    <a href="#" aria-label="Twitter" style="width: 40px; height: 40px; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-color);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+                    </a>
+                    <!-- Gmail -->
+                    <a href="mailto:info@evergreenacademy.edu.dummy" aria-label="Gmail" style="width: 40px; height: 40px; background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-color);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; border-top: 1px solid var(--border-color); padding-top: 2rem; font-size: 0.85rem;">
+            <p>&copy; 2026 Evergreen Academy. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/app.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentThemeAttr = document.documentElement.getAttribute('data-theme');
+            const moon = document.getElementById('moon-icon');
+            const sun = document.getElementById('sun-icon');
+            if (currentThemeAttr === 'dark') {
+                if(sun) sun.style.display = 'block';
+            } else {
+                if(moon) moon.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+    <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700;">
+        {{ staff.first_name|first }}{{ staff.last_name|first }}
+    </div>
+    <div>
+        <h2 style="margin: 0; font-size: 1.5rem; color: var(--text-primary);">{{ staff.first_name }} {{ staff.last_name }}</h2>
+        <div style="display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);">
+            <span>{{ staff.employee_id }}</span>
+            <span>&bull;</span>
+            <span>Joined: {{ staff.joining_date|date:"N j, Y" }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 1.5rem; box-shadow: none; border: 1px solid var(--border-color);">
+    <h4 style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 1rem 0;">Professional Details</h4>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;">
+        <div>
+            <div style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.25rem;">Role</div>
+            <div style="color: var(--text-primary); font-weight: 500;">{{ staff.get_staff_type_display }}</div>
+        </div>
+        <div>
+            <div style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.25rem;">Department</div>
+            <div style="color: var(--text-primary); font-weight: 500;">{{ staff.department|default:"—" }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 1.5rem; box-shadow: none; border: 1px solid var(--border-color);">
+    <h4 style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 1rem 0;">Contact Information</h4>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.95rem;">
+        <div>
+            <div style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.25rem;">Phone Number</div>
+            <div style="color: var(--text-primary); font-weight: 500;">{{ staff.phone_number|default:"—" }}</div>
+        </div>
+        <div>
+            <div style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.25rem;">Email Address</div>
+            <div style="color: var(--text-primary); font-weight: 500;">{{ staff.email|default:"—" }}</div>
+        </div>
+    </div>
+</div>
+
+{% if staff.staff_type == 'TEACHER' %}
+<div class="card" style="margin-bottom: 1.5rem; box-shadow: none; border: 1px solid var(--border-color);">
+    <h4 style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 1rem 0;">Teaching Assignments</h4>
+    
+    <div style="margin-bottom: 1rem;">
+        <div style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.5rem;">Subjects Taught</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            {% for subject in staff.subjects.all %}
+                <span class="badge" style="background: rgba(59, 130, 246, 0.1); color: #2563eb; padding: 0.4rem 0.75rem;">{{ subject.name }}</span>
+            {% empty %}
+                <span style="color: var(--text-secondary); font-size: 0.85rem;">No subjects assigned.</span>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div>
+        <div style="color: var(--text-secondary); font-size: 0.8rem; margin-bottom: 0.5rem;">Class Teacher For</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            {% for section in assigned_sections %}
+                <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: #059669; padding: 0.4rem 0.75rem;">{{ section.academic_class.name }} - Section {{ section.name }}</span>
+            {% empty %}
+                <span style="color: var(--text-secondary); font-size: 0.85rem;">Not a class teacher.</span>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div style="display: flex; gap: 1rem; margin-top: 2rem;">
+    <button class="btn btn-outline" style="flex: 1;" onclick="closeSidePanel()">Close</button>
+</div>

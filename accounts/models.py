@@ -26,6 +26,7 @@ class Role(models.Model):
 class User(AbstractUser):
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True, related_name="users")
     phone_number = models.CharField(max_length=20, blank=True)
+    initial_temp_password = models.CharField(max_length=128, blank=True, null=True, help_text="Temporary password for first-time login")
 
     def has_scope_permission(self, perm_name):
         """

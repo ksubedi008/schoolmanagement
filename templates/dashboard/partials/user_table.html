@@ -1,0 +1,62 @@
+{% for u in users %}
+<tr>
+    <td>
+        <div style="font-weight: 600; color: var(--text-primary);">{{ u.username }}</div>
+        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">{{ u.first_name }} {{ u.last_name }}</div>
+    </td>
+    <td>
+        <div style="color: var(--text-primary); font-size: 0.9rem;">{{ u.email|default:"No email" }}</div>
+        <div style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 2px;">{{ u.phone_number|default:"No phone" }}</div>
+    </td>
+    <td>
+        {% if u.is_superuser %}
+            <span class="badge" style="background: rgba(139, 92, 246, 0.2); color: #7c3aed;">Superuser</span>
+        {% else %}
+            <span class="badge" style="background: rgba(59, 130, 246, 0.1); color: #2563eb;">{{ u.role.name|default:"Unassigned" }}</span>
+        {% endif %}
+    </td>
+    <td>
+        <div style="font-size: 0.9rem; color: var(--text-primary);">{{ u.last_login|date:"M d, Y H:i"|default:"Never" }}</div>
+        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">Joined: {{ u.date_joined|date:"M d, Y" }}</div>
+    </td>
+    <td>
+        {% if u.is_active %}
+            <span class="badge" style="background: rgba(52, 211, 153, 0.2); color: #059669;">Active</span>
+        {% else %}
+            <span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #dc2626;">Inactive</span>
+        {% endif %}
+    </td>
+    <td style="text-align: right;">
+        {% if u.id != request.user.id %}
+            <div class="dropdown" style="position: relative; display: inline-block;">
+                <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="toggleDropdown('dropdown-{{ u.id }}')">
+                    Options ▾
+                </button>
+                <div id="dropdown-{{ u.id }}" class="dropdown-content" style="display: none; position: absolute; right: 0; background: var(--surface-color); min-width: 160px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 8px; border: 1px solid var(--border-color); z-index: 100; text-align: left; padding: 0.5rem 0; margin-top: 0.5rem;">
+                    <a href="#" style="display: block; padding: 0.5rem 1rem; text-decoration: none; color: var(--text-primary); font-size: 0.85rem;" 
+                       onclick="generateTempPassword({{ u.id }}, '{{ u.username }}'); return false;">Reset Password</a>
+                    <a href="#" style="display: block; padding: 0.5rem 1rem; text-decoration: none; color: #dc2626; font-size: 0.85rem;" 
+                       onclick="ModularTable.triggerDelete('{% url 'dashboard:soft_delete_user' u.id %}', '{{ u.username }}', 'user-row-{{ u.id }}', {% if u.role.name == 'Admin' or u.is_superuser %}'{{ u.username }}'{% else %}null{% endif %}); return false;">Deactivate User</a>
+                </div>
+            </div>
+        {% else %}
+            <span style="font-size: 0.8rem; color: var(--text-secondary); font-style: italic;">Current User</span>
+        {% endif %}
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="6" style="text-align: center; padding: 3rem 1rem; color: var(--text-secondary);">
+        No users found.
+    </td>
+</tr>
+{% endfor %}
+
+<!-- Pagination Data -->
+<tr id="paginationData" style="display:none;" 
+    data-has-next="{{ users.has_next|yesno:'true,false' }}" 
+    data-has-prev="{{ users.has_previous|yesno:'true,false' }}" 
+    data-page="{{ users.number }}" 
+    data-total-pages="{{ users.paginator.num_pages }}"
+    data-total-count="{{ users.paginator.count }}">
+</tr>

@@ -1,0 +1,29 @@
+{% extends 'layout.html' %}
+
+{% block title %}Student Portal | SMS{% endblock %}
+{% block page_title %}Student Portal{% endblock %}
+
+{% block content %}
+<div style="text-align: center; margin-top: 2rem;">
+    <h2 style="color: var(--text-primary); font-size: 2rem; margin-bottom: 1rem;">Welcome to the Student Portal</h2>
+    <p style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2rem;">Your personalized dashboard for classes, assignments, and grades.</p>
+    
+    <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;">
+        <div class="card" style="width: 250px; text-align: left;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">📚</div>
+            <h3 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 0.5rem;">My Classes</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">View your schedule and enrolled subjects.</p>
+        </div>
+        <div class="card" style="width: 250px; text-align: left;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">📝</div>
+            <h3 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 0.5rem;">Assignments</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Check pending and completed homework.</p>
+        </div>
+        <div class="card" style="width: 250px; text-align: left;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">📊</div>
+            <h3 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 0.5rem;">Grades</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Access your academic performance records.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'layout.html' %}
+
+{% block title %}Teacher Portal | SMS{% endblock %}
+{% block page_title %}Teacher Portal{% endblock %}
+
+{% block content %}
+<div style="text-align: center; margin-top: 2rem;">
+    <h2 style="color: var(--text-primary); font-size: 2rem; margin-bottom: 1rem;">Welcome to the Teacher Portal</h2>
+    <p style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2rem;">Manage your classes, students, and curriculum.</p>
+    
+    <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;">
+        <div class="card" style="width: 250px; text-align: left;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">👨‍🏫</div>
+            <h3 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 0.5rem;">My Classes</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">View assigned sections and schedules.</p>
+        </div>
+        <div class="card" style="width: 250px; text-align: left;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">📅</div>
+            <h3 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 0.5rem;">Attendance</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Mark and review student attendance.</p>
+        </div>
+        <div class="card" style="width: 250px; text-align: left;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">✏️</div>
+            <h3 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 0.5rem;">Grading</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Enter marks and generate reports.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

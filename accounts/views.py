@@ -17,3 +17,18 @@ def traffic_control(request):
     
     # Fallback dashboard
     return redirect('dashboard:home')
+
+from django.contrib.auth.views import PasswordChangeView
+from django.urls import reverse_lazy
+
+class CustomPasswordChangeView(PasswordChangeView):
+    template_name = 'accounts/password_change.html'
+    success_url = reverse_lazy('dashboard:home')
+    
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        # Clear the temporary password once changed
+        if self.request.user.initial_temp_password:
+            self.request.user.initial_temp_password = ''
+            self.request.user.save(update_fields=['initial_temp_password'])
+        return response

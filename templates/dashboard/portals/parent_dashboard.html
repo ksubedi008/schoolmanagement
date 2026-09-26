@@ -1,0 +1,29 @@
+{% extends 'layout.html' %}
+
+{% block title %}Parent Portal | SMS{% endblock %}
+{% block page_title %}Parent Portal{% endblock %}
+
+{% block content %}
+<div style="text-align: center; margin-top: 2rem;">
+    <h2 style="color: var(--text-primary); font-size: 2rem; margin-bottom: 1rem;">Welcome to the Parent Portal</h2>
+    <p style="color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2rem;">Stay updated on your children's academic progress.</p>
+    
+    <div style="display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;">
+        <div class="card" style="width: 250px; text-align: left;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">👨‍👩‍👧‍👦</div>
+            <h3 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 0.5rem;">My Children</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">View linked student profiles and information.</p>
+        </div>
+        <div class="card" style="width: 250px; text-align: left;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">💳</div>
+            <h3 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 0.5rem;">Fees & Payments</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Check outstanding balances and history.</p>
+        </div>
+        <div class="card" style="width: 250px; text-align: left;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">📢</div>
+            <h3 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 0.5rem;">Notices</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Read important school announcements.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

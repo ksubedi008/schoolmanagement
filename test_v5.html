@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://nepalidatepicker.sajanmaharjan.com.np/v5/nepali.datepicker/css/nepali.datepicker.v5.0.6.min.css" rel="stylesheet" type="text/css"/>
+    <script src="https://nepalidatepicker.sajanmaharjan.com.np/v5/nepali.datepicker/js/nepali.datepicker.v5.0.6.min.js" type="text/javascript"></script>
+</head>
+<body>
+    <script>
+        window.onload = function() {
+            try {
+                let bsDateStr = "2083-01-15";
+                let adDate = NepaliFunctions.BS2AD(bsDateStr);
+                console.log("String input:", adDate);
+            } catch (e) {
+                console.log("Error with string input:", e);
+            }
+            try {
+                let adDateObj = NepaliFunctions.BS2AD({year: 2083, month: 1, day: 15});
+                console.log("Object input:", adDateObj);
+            } catch (e) {
+                console.log("Error with object input:", e);
+            }
+        };
+    </script>
+</body>
+</html>

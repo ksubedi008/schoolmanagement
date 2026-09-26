@@ -4,16 +4,223 @@
 {% block page_title %}System Management{% endblock %}
 
 {% block content %}
-<div class="card">
-    <h3 class="card-title">System Management</h3>
-    <p style="color: var(--text-secondary); margin-top: 1rem;">Manage global settings, backups, and notifications.</p>
+<div style="margin-bottom: 2rem;">
+    <h3 class="card-title">Global Settings & Auditing</h3>
+    <p style="color: var(--text-secondary); margin-top: 0.25rem; font-size: 0.9rem;">Manage school identity, system variables, and review recent activity logs.</p>
+</div>
+
+<div class="dashboard-grid">
     
-    <div style="margin-top: 2rem; padding: 2rem; border: 2px dashed var(--border-color); border-radius: 8px; text-align: center; color: var(--text-secondary);">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 1rem;"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        <h4>Module Under Construction</h4>
-        <p>This module's interface is currently being built.</p>
-        <br>
-        <a href="{% url 'dashboard:admin_dashboard' %}" class="btn" style="background: var(--primary-color); color: white; text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 8px; display: inline-block; margin-top: 1rem;">Return to Admin Overview</a>
+    <!-- School Profile Card -->
+    <div class="card" style="grid-column: 1 / -1; max-width: 800px;">
+        <h4 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">School Profile</h4>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_profile">
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1rem;">
+                <div class="form-group">
+                    <label>School Name <span style="color: red;">*</span></label>
+                    <input type="text" name="name" value="{{ profile.name }}" required class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Principal Name</label>
+                    <input type="text" name="principal_name" value="{{ profile.principal_name }}" class="form-control">
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1rem;">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" value="{{ profile.email }}" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" name="phone" value="{{ profile.phone }}" class="form-control">
+                </div>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Physical Address</label>
+                <textarea name="address" class="form-control" rows="2">{{ profile.address }}</textarea>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="form-group">
+                    <label>Website URL</label>
+                    <input type="url" name="website" value="{{ profile.website }}" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Established Year</label>
+                    <input type="number" name="established_year" value="{{ profile.established_year|default:'' }}" class="form-control">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Update Profile</button>
+        </form>
+    </div>
+
+    <!-- System Settings -->
+    <div class="card" style="grid-column: span 1;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h4 style="font-size: 1.1rem; color: var(--text-primary);">System Settings</h4>
+            <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="openModal('modal-setting')">+ Variable</button>
+        </div>
+        <div style="max-height: 400px; overflow-y: auto;">
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                {% for setting in settings_list %}
+                <li style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <strong style="color: var(--text-primary); font-size: 0.9rem;">{{ setting.key }}</strong>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">{{ setting.description }}</div>
+                        </div>
+                        <span class="badge" style="background: rgba(59, 130, 246, 0.1); color: #2563eb; font-family: monospace;">{{ setting.value }}</span>
+                    </div>
+                </li>
+                {% empty %}
+                <li style="color: var(--text-secondary); font-size: 0.85rem; padding: 1rem 0;">No system settings configured.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Audit Logs -->
+    <div class="card" style="grid-column: span 1;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h4 style="font-size: 1.1rem; color: var(--text-primary);">Recent Audit Logs</h4>
+            <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="alert('Report generation will be handled via background tasks in production.')">Generate Report</button>
+        </div>
+        
+        <!-- Filters -->
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+            <select id="auditActionFilter" class="form-control" style="flex: 1; padding: 0.5rem; font-size: 0.85rem; min-width: 100px;">
+                <option value="">All Actions</option>
+                <option value="CREATE">Create</option>
+                <option value="UPDATE">Update</option>
+                <option value="DELETE">Delete</option>
+            </select>
+            <input type="date" id="auditDateFilter" class="form-control" style="flex: 1; padding: 0.5rem; font-size: 0.85rem; min-width: 120px;">
+        </div>
+
+        <div style="max-height: 400px; overflow-y: auto;">
+            <ul id="auditLogList" style="list-style: none; padding: 0; margin: 0;">
+                {% for log in audit_logs %}
+                <li class="audit-log-item" data-action="{{ log.action }}" data-date="{{ log.timestamp|date:'Y-m-d' }}" style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-primary);">{{ log.action }}</span>
+                        <span style="font-size: 0.7rem; color: var(--text-secondary);">{{ log.timestamp|date:"M d, H:i" }}</span>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                        User: {{ log.user.username|default:"System" }} &bull; Module: {{ log.module }}
+                    </div>
+                </li>
+                {% empty %}
+                <li style="color: var(--text-secondary); font-size: 0.85rem; padding: 1rem 0;">No activity logged yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+<!-- Modal for System Setting -->
+<div id="modal-setting" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 100%; max-width: 450px; margin: 1rem; position: relative;">
+        <button onclick="closeModal('modal-setting')" style="position: absolute; right: 1.5rem; top: 1.5rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
+        <h3 class="card-title">Add System Variable</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_setting">
+            
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Category</label>
+                <select name="category" required class="form-control">
+                    <option value="GENERAL">General</option>
+                    <option value="NOTIFICATION">Notification Settings</option>
+                    <option value="PERMISSION">System Permissions</option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Key Name (e.g., SMTP_PORT, MAX_FILE_SIZE)</label>
+                <input type="text" name="key" required class="form-control" style="font-family: monospace;">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Value</label>
+                <input type="text" name="value" required class="form-control">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Description</label>
+                <textarea name="description" class="form-control" rows="2" placeholder="What does this control?"></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Save Variable</button>
+        </form>
     </div>
 </div>
+
+<style>
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+    .form-control {
+        width: 100%; 
+        padding: 0.75rem; 
+        border-radius: 8px; 
+        border: 1px solid var(--border-color); 
+        background: var(--bg-color); 
+        color: var(--text-primary);
+        font-family: inherit;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+    label { font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem; font-weight: 500; }
+    .badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; }
+</style>
+
+<script>
+    function openModal(id) {
+        document.getElementById(id).style.display = 'flex';
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const actionFilter = document.getElementById('auditActionFilter');
+        const dateFilter = document.getElementById('auditDateFilter');
+        const items = document.querySelectorAll('.audit-log-item');
+
+        function filterLogs() {
+            const action = actionFilter.value.toLowerCase();
+            const date = dateFilter.value;
+            
+            items.forEach(item => {
+                const itemAction = item.dataset.action.toLowerCase();
+                const itemDate = item.dataset.date;
+                
+                let matchesAction = action === "" || itemAction.includes(action);
+                let matchesDate = date === "" || itemDate === date;
+                
+                if (matchesAction && matchesDate) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        actionFilter.addEventListener('change', filterLogs);
+        dateFilter.addEventListener('change', filterLogs);
+    });
+</script>
 {% endblock %}

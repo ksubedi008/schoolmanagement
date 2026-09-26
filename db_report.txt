@@ -1,0 +1,4 @@
+Nursery: 170 students
+LKG: 74 students
+UKG: 27 students
+Total students across all classes: 271

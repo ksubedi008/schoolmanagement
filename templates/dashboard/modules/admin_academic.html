@@ -4,16 +4,650 @@
 {% block page_title %}Academic Configuration{% endblock %}
 
 {% block content %}
-<div class="card">
-    <h3 class="card-title">Academic Configuration</h3>
-    <p style="color: var(--text-secondary); margin-top: 1rem;">Configure terms, classes, subjects, and grading.</p>
-    
-    <div style="margin-top: 2rem; padding: 2rem; border: 2px dashed var(--border-color); border-radius: 8px; text-align: center; color: var(--text-secondary);">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 1rem;"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        <h4>Module Under Construction</h4>
-        <p>This module's interface is currently being built.</p>
-        <br>
-        <a href="{% url 'dashboard:admin_dashboard' %}" class="btn" style="background: var(--primary-color); color: white; text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 8px; display: inline-block; margin-top: 1rem;">Return to Admin Overview</a>
+<div style="margin-bottom: 2rem;">
+    <h3 class="card-title">School Core Setup</h3>
+    <p style="color: var(--text-secondary); margin-top: 0.25rem; font-size: 0.9rem;">Configure academic years, classes, grading systems, and school periods.</p>
+</div>
+
+<div class="dashboard-grid">
+    <!-- Academic Years -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h4 style="font-size: 1.1rem; color: var(--text-primary);">Academic Years</h4>
+            <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="openModal('modal-year')">+ Add</button>
+        </div>
+        <ul style="list-style: none; padding: 0; margin: 0;">
+            {% for y in academic_years %}
+            <li id="year-row-{{ y.id }}" style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <span style="font-weight: 500;">{{ y.name }}</span>
+                    {% if y.is_active %}<span class="badge" style="background: rgba(52, 211, 153, 0.2); color: #059669; margin-left: 0.5rem;">Active</span>{% endif %}
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.2rem;">
+                        <span class="bs-date-range" data-start-ad="{{ y.start_date|date:'Y-m-d' }}" data-end-ad="{{ y.end_date|date:'Y-m-d' }}">
+                            {{ y.start_date|date:"Y-m-d" }} → {{ y.end_date|date:"Y-m-d" }}
+                        </span>
+                    </div>
+                </div>
+                <button class="btn" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 0.25rem;" onclick="ModularTable.triggerDelete('{% url 'dashboard:soft_delete_academic' 'year' y.id %}', '{{ y.name }}', 'year-row-{{ y.id }}')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+            </li>
+            {% empty %}
+            <li style="color: var(--text-secondary); font-size: 0.85rem;">No academic years configured.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Classes & Sections -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h4 style="font-size: 1.1rem; color: var(--text-primary);">Classes</h4>
+            <div>
+                <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="openModal('modal-class')">+ Class</button>
+                <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="openModal('modal-section')">+ Section</button>
+            </div>
+        </div>
+        <div style="max-height: 200px; overflow-y: auto;">
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                {% for c in classes %}
+                <li id="class-row-{{ c.id }}" style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; cursor: pointer;" onclick="if(event.target.tagName !== 'BUTTON' && event.target.tagName !== 'SVG' && event.target.tagName !== 'PATH' && event.target.tagName !== 'A' && event.target.tagName !== 'POLYLINE') openSidePanel('Class Details', '{% url 'dashboard:class_details_partial' c.id %}')">
+                    <div>
+                        <strong style="color: var(--primary-color);">{{ c.name }}</strong>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                            Sections: 
+                            {% for sec in c.sections.all %}
+                                <span id="section-span-{{ sec.id }}">
+                                    {{ sec.name }} <a href="#" style="color: #dc2626; text-decoration: none; margin-right: 0.25rem;" onclick="ModularTable.triggerDelete('{% url 'dashboard:soft_delete_academic' 'section' sec.id %}', 'Section {{ sec.name }}', 'section-span-{{ sec.id }}'); event.stopPropagation(); return false;">&times;</a>{% if not forloop.last %},{% endif %}
+                                </span>
+                            {% empty %}
+                                None
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <button class="btn" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 0.25rem;" onclick="ModularTable.triggerDelete('{% url 'dashboard:soft_delete_academic' 'class' c.id %}', '{{ c.name }}', 'class-row-{{ c.id }}'); event.stopPropagation();">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                </li>
+                {% empty %}
+                <li style="color: var(--text-secondary); font-size: 0.85rem;">No classes configured.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Subjects -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h4 style="font-size: 1.1rem; color: var(--text-primary);">Subjects</h4>
+            <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="openModal('modal-subject')">+ Add</button>
+        </div>
+        <div style="max-height: 200px; overflow-y: auto;">
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                {% for sub in subjects %}
+                <li id="subject-row-{{ sub.id }}" style="padding: 0.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; border-radius: 4px;" class="hover-row" onclick="openSidePanel('Assign Subject', '{% url 'dashboard:subject_details_partial' sub.id %}')">
+                    <div>
+                        <span style="font-weight: 500;">{{ sub.name }}</span>
+                        <span style="color: var(--text-secondary); font-size: 0.85rem; margin-left: 0.5rem;">{{ sub.code }}</span>
+                    </div>
+                    <button class="btn" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 0.25rem;" onclick="ModularTable.triggerDelete('{% url 'dashboard:soft_delete_academic' 'subject' sub.id %}', '{{ sub.name }}', 'subject-row-{{ sub.id }}'); event.stopPropagation();">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                </li>
+                {% empty %}
+                <li style="color: var(--text-secondary); font-size: 0.85rem;">No subjects configured.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    </div>
+
+    <!-- Elective Groups -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h4 style="font-size: 1.1rem; color: var(--text-primary);">Elective Groups</h4>
+            <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="openModal('modal-elective-group')">+ Add</button>
+        </div>
+        <div style="max-height: 200px; overflow-y: auto;">
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                {% for group in elective_groups %}
+                <li id="elective-group-row-{{ group.id }}" style="padding: 0.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; border-radius: 4px;" class="hover-row">
+                    <div>
+                        <span style="font-weight: 500;">{{ group.name }}</span>
+                        <div style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 2px;">{{ group.academic_class.name }}</div>
+                    </div>
+                    <button class="btn" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 0.25rem;" onclick="ModularTable.triggerDelete('{% url 'dashboard:soft_delete_academic' 'elective_group' group.id %}', '{{ group.name }}', 'elective-group-row-{{ group.id }}'); event.stopPropagation();">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                </li>
+                {% empty %}
+                <li style="color: var(--text-secondary); font-size: 0.85rem;">No elective groups configured.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Grading & Exams -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h4 style="font-size: 1.1rem; color: var(--text-primary);">Grading & Exams</h4>
+            <div>
+                <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="openModal('modal-grading')">+ Grade</button>
+                <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="openModal('modal-exam')">+ Exam</button>
+            </div>
+        </div>
+        <div style="margin-bottom: 1rem;">
+            <strong style="font-size: 0.85rem; color: var(--text-secondary);">Grading Systems:</strong>
+            {% for g in grading_systems %}
+                <span id="grading-span-{{ g.id }}" class="badge" style="background: rgba(59, 130, 246, 0.1); color: #2563eb; margin: 0.25rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                    {{ g.name }}
+                    <a href="#" style="color: #dc2626; text-decoration: none;" onclick="ModularTable.triggerDelete('{% url 'dashboard:soft_delete_academic' 'grading' g.id %}', '{{ g.name }}', 'grading-span-{{ g.id }}'); return false;">&times;</a>
+                </span>
+            {% empty %}
+                <span style="font-size: 0.85rem; color: var(--text-secondary);">None</span>
+            {% endfor %}
+        </div>
+        <div>
+            <strong style="font-size: 0.85rem; color: var(--text-secondary);">Exam Types:</strong>
+            {% for e in exam_types %}
+                <span id="exam-span-{{ e.id }}" class="badge" style="background: rgba(139, 92, 246, 0.1); color: #7c3aed; margin: 0.25rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                    {{ e.name }}
+                    <a href="#" style="color: #dc2626; text-decoration: none;" onclick="ModularTable.triggerDelete('{% url 'dashboard:soft_delete_academic' 'exam' e.id %}', '{{ e.name }}', 'exam-span-{{ e.id }}'); return false;">&times;</a>
+                </span>
+            {% empty %}
+                <span style="font-size: 0.85rem; color: var(--text-secondary);">None</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Terms & Periods -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h4 style="font-size: 1.1rem; color: var(--text-primary);">Terms & Periods</h4>
+            <div>
+                <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="openModal('modal-term')">+ Term</button>
+                <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="openModal('modal-period')">+ Period</button>
+            </div>
+        </div>
+        <div style="margin-bottom: 1rem;">
+            <strong style="font-size: 0.85rem; color: var(--text-secondary);">Terms:</strong>
+            {% for t in terms %}
+                <div id="term-row-{{ t.id }}" style="font-size: 0.85rem; margin-top: 0.25rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span>{{ t.name }} ({{ t.academic_year.name }})</span>
+                    <a href="#" style="color: #dc2626; text-decoration: none;" onclick="ModularTable.triggerDelete('{% url 'dashboard:soft_delete_academic' 'term' t.id %}', '{{ t.name }}', 'term-row-{{ t.id }}'); return false;">&times;</a>
+                </div>
+            {% empty %}
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">None</div>
+            {% endfor %}
+        </div>
+        <div>
+            <strong style="font-size: 0.85rem; color: var(--text-secondary);">Class Periods:</strong>
+            {% for p in periods %}
+                <div id="period-row-{{ p.id }}" style="font-size: 0.85rem; margin-top: 0.25rem; display: flex; justify-content: space-between; align-items: center;">
+                    <span>{{ p.name }} ({{ p.start_time|time:"H:i" }} - {{ p.end_time|time:"H:i" }})</span>
+                    <a href="#" style="color: #dc2626; text-decoration: none;" onclick="ModularTable.triggerDelete('{% url 'dashboard:soft_delete_academic' 'period' p.id %}', '{{ p.name }}', 'period-row-{{ p.id }}'); return false;">&times;</a>
+                </div>
+            {% empty %}
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">None</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Calendar Events -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h4 style="font-size: 1.1rem; color: var(--text-primary);">School Calendar</h4>
+            <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="openModal('modal-event')">+ Add Event</button>
+        </div>
+        <ul style="list-style: none; padding: 0; margin: 0; max-height: 200px; overflow-y: auto;">
+            {% for ev in events %}
+            <li id="event-row-{{ ev.id }}" style="padding: 0.5rem 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-weight: 500;">{{ ev.title }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">{{ ev.date|date:"M d, Y" }}</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="badge" style="background: rgba(245, 158, 11, 0.1); color: #d97706; font-size: 0.7rem;">{{ ev.get_event_type_display }}</span>
+                    <button class="btn" style="background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 0.25rem;" onclick="ModularTable.triggerDelete('{% url 'dashboard:soft_delete_academic' 'event' ev.id %}', '{{ ev.title }}', 'event-row-{{ ev.id }}')">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                </div>
+            </li>
+            {% empty %}
+            <li style="color: var(--text-secondary); font-size: 0.85rem;">No upcoming events.</li>
+            {% endfor %}
+        </ul>
     </div>
 </div>
+
+<!-- Modals for Creation -->
+
+<!-- Academic Year -->
+<div id="modal-year" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 100%; max-width: 420px; margin: 1rem; position: relative;">
+        <button onclick="closeModal('modal-year')" style="position: absolute; right: 1.5rem; top: 1.5rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
+        <h3 class="card-title">Add Academic Year</h3>
+        <div style="display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3); border-radius: 6px; padding: 0.35rem 0.75rem; margin-bottom: 1rem; font-size: 0.8rem; color: var(--primary-color);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            Dates are displayed in Bikram Sambat (BS)
+        </div>
+        <form method="POST" id="form-year" onsubmit="return validateYearForm()">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_academic_year">
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Year Name <span style="color:var(--text-secondary); font-size:0.8rem;">(e.g., 2082-2083)</span></label>
+                <input type="text" name="name" required placeholder="e.g. 2082-2083" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);">
+            </div>
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Start Date <span style="font-size:0.75rem; color:var(--text-secondary);">(BS Calendar)</span></label>
+                <input type="text" id="start_date_bs" placeholder="YYYY-MM-DD" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary); cursor: pointer;">
+                <input type="hidden" name="start_date" id="start_date_ad">
+            </div>
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>End Date <span style="font-size:0.75rem; color:var(--text-secondary);">(BS Calendar)</span></label>
+                <input type="text" id="end_date_bs" placeholder="YYYY-MM-DD" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary); cursor: pointer;">
+                <input type="hidden" name="end_date" id="end_date_ad">
+            </div>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" name="is_active"> Make this the active year
+                </label>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Save Academic Year</button>
+        </form>
+    </div>
+</div>
+
+<!-- Class -->
+<div id="modal-class" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 100%; max-width: 400px; margin: 1rem; position: relative;">
+        <button onclick="closeModal('modal-class')" style="position: absolute; right: 1.5rem; top: 1.5rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
+        <h3 class="card-title">Add Class</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_class">
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Class Name</label>
+                <input type="text" name="name" required placeholder="e.g. Class 10" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Save</button>
+        </form>
+    </div>
+</div>
+
+<!-- Section -->
+<div id="modal-section" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 100%; max-width: 400px; margin: 1rem; position: relative;">
+        <button onclick="closeModal('modal-section')" style="position: absolute; right: 1.5rem; top: 1.5rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
+        <h3 class="card-title">Add Section</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_section">
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Select Class</label>
+                <select name="academic_class_id" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);">
+                    {% for c in classes %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Section Name</label>
+                <input type="text" name="name" required placeholder="e.g. A" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Save</button>
+        </form>
+    </div>
+</div>
+
+<!-- Subject -->
+<div id="modal-subject" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 100%; max-width: 400px; margin: 1rem; position: relative;">
+        <button onclick="closeModal('modal-subject')" style="position: absolute; right: 1.5rem; top: 1.5rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
+        <h3 class="card-title">Add Subject</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_subject">
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Subject Name</label>
+                <input type="text" name="name" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);">
+            </div>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Subject Code</label>
+                <input type="text" name="code" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Save</button>
+        </form>
+    </div>
+</div>
+
+<!-- Grading System -->
+<div id="modal-grading" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 100%; max-width: 400px; margin: 1rem; position: relative;">
+        <button onclick="closeModal('modal-grading')" style="position: absolute; right: 1.5rem; top: 1.5rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
+        <h3 class="card-title">Add Grading System</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_grading">
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Name</label>
+                <input type="text" name="name" placeholder="e.g. GPA 4.0" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);">
+            </div>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Description</label>
+                <textarea name="description" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Save</button>
+        </form>
+    </div>
+</div>
+
+<!-- Exam Type -->
+<div id="modal-exam" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 100%; max-width: 400px; margin: 1rem; position: relative;">
+        <button onclick="closeModal('modal-exam')" style="position: absolute; right: 1.5rem; top: 1.5rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
+        <h3 class="card-title">Add Exam Type</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_exam_type">
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Exam Name</label>
+                <input type="text" name="name" placeholder="e.g. Mid-Term" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Save</button>
+        </form>
+    </div>
+</div>
+
+<!-- Term -->
+<div id="modal-term" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 100%; max-width: 400px; margin: 1rem; position: relative;">
+        <button onclick="closeModal('modal-term')" style="position: absolute; right: 1.5rem; top: 1.5rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
+        <h3 class="card-title">Add School Term</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_term">
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Academic Year</label>
+                <select name="academic_year_id" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);">
+                    {% for y in academic_years %}<option value="{{ y.id }}">{{ y.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Term Name</label>
+                <input type="text" name="name" placeholder="e.g. Semester 1" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);">
+            </div>
+            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                <div style="flex:1;"><label>Start Date</label><input type="date" name="start_date" required style="width:100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);"></div>
+                <div style="flex:1;"><label>End Date</label><input type="date" name="end_date" required style="width:100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);"></div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Save</button>
+        </form>
+    </div>
+</div>
+
+</div>
+
+<!-- Elective Group -->
+<div id="modal-elective-group" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 100%; max-width: 400px; margin: 1rem; position: relative;">
+        <button onclick="closeModal('modal-elective-group')" style="position: absolute; right: 1.5rem; top: 1.5rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
+        <h3 class="card-title">Add Elective Group</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_elective_group">
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Group Name</label>
+                <input type="text" name="name" placeholder="e.g. Group 1: Opt Math/Eco" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);">
+            </div>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Class</label>
+                <select name="academic_class_id" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);">
+                    {% for c in classes %}
+                    <option value="{{ c.id }}">{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Subjects</label>
+                <select name="subject_ids" multiple required style="width: 100%; height: 100px; padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);">
+                    {% for sub in subjects %}
+                    <option value="{{ sub.id }}">{{ sub.name }} ({{ sub.code }})</option>
+                    {% endfor %}
+                </select>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">Hold Ctrl/Cmd to select multiple.</p>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Save</button>
+        </form>
+    </div>
+</div>
+
+<!-- Period -->
+<div id="modal-period" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 100%; max-width: 400px; margin: 1rem; position: relative;">
+        <button onclick="closeModal('modal-period')" style="position: absolute; right: 1.5rem; top: 1.5rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
+        <h3 class="card-title">Add Class Period</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_period">
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Period Name</label>
+                <input type="text" name="name" placeholder="e.g. Period 1, Lunch" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);">
+            </div>
+            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                <div style="flex:1;"><label>Start Time</label><input type="time" name="start_time" required style="width:100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);"></div>
+                <div style="flex:1;"><label>End Time</label><input type="time" name="end_time" required style="width:100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);"></div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Save</button>
+        </form>
+    </div>
+</div>
+
+<!-- Event -->
+<div id="modal-event" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 100%; max-width: 400px; margin: 1rem; position: relative;">
+        <button onclick="closeModal('modal-event')" style="position: absolute; right: 1.5rem; top: 1.5rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
+        <h3 class="card-title">Add Calendar Event</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="create_event">
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Event Title</label>
+                <input type="text" name="title" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);">
+            </div>
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label>Date</label>
+                <input type="date" name="date" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);">
+            </div>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label>Type</label>
+                <select name="event_type" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary);">
+                    <option value="HOLIDAY">Holiday</option>
+                    <option value="EXAM">Exam</option>
+                    <option value="EVENT">School Event</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Save</button>
+        </form>
+    </div>
+</div>
+
+<style>
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+    label { font-size: 0.85rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem; }
+    .badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; }
+</style>
+
+<script>
+    function openModal(id) {
+        document.getElementById(id).style.display = 'flex';
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    // Global function for handling class subject assignment from the side panel
+    window.updateClassSubjects = function(classId) {
+        const checkboxes = document.querySelectorAll('.subject-checkbox:checked');
+        const subjectIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+        
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const url = `/dashboard/admin/academic/class/assign-subjects/${classId}/`;
+        
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ subject_ids: subjectIds })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (typeof Toast !== 'undefined') {
+                    Toast.show('Class syllabus updated successfully.');
+                }
+            } else {
+                alert('Error updating subjects: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('A network error occurred.');
+        });
+    };
+
+    window.switchClassTab = function(tabId, btnElement, fetchUrl = null) {
+        // Update buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.style.color = 'var(--text-secondary)';
+            btn.style.borderBottomColor = 'transparent';
+            btn.classList.remove('active');
+        });
+        btnElement.style.color = 'var(--text-primary)';
+        btnElement.style.borderBottomColor = 'var(--primary-color)';
+        btnElement.classList.add('active');
+
+        // Update content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.style.display = 'none';
+        });
+        document.getElementById(`tab-${tabId}`).style.display = 'block';
+
+        // Lazy load content if URL provided
+        if (fetchUrl && !btnElement.dataset.loaded) {
+            fetch(fetchUrl)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById(`${tabId}-loader`).style.display = 'none';
+                    document.getElementById(`${tabId}-container`).innerHTML = html;
+                    btnElement.dataset.loaded = 'true';
+                })
+                .catch(err => {
+                    console.error('Error fetching tab content:', err);
+                    document.getElementById(`${tabId}-loader`).innerHTML = '<p style="color: red;">Error loading content.</p>';
+                });
+        }
+    };
+
+    window.updateClassTeacher = function(sectionId, teacherId, classId) {
+        const formData = new FormData();
+        formData.append('action', 'update_class_teacher');
+        formData.append('section_id', sectionId);
+        formData.append('teacher_id', teacherId);
+
+        fetch(`/dashboard/admin/academic/class/details/${classId}/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        }).then(response => response.json()).then(data => {
+            if (data.success) {
+                if (typeof Toast !== 'undefined') {
+                    Toast.show('Class teacher updated successfully!');
+                }
+            } else {
+                alert('Failed to update class teacher: ' + (data.error || 'Unknown error'));
+            }
+        }).catch(err => {
+            alert('Error updating class teacher.');
+        });
+    };
+    
+    window.editSection = function(sectionId, sectionName, classId) {
+        const newName = prompt("Edit Section Name:", sectionName);
+        if (newName && newName !== sectionName) {
+            const formData = new FormData();
+            formData.append('action', 'edit_section');
+            formData.append('section_id', sectionId);
+            formData.append('name', newName);
+            
+            fetch(`/dashboard/admin/academic/class/details/${classId}/`, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value }
+            }).then(response => response.json()).then(data => {
+                if (data.success) {
+                    if (typeof Toast !== 'undefined') {
+                        Toast.show('Section updated successfully!');
+                    }
+                    openSidePanel('Class Details', `/dashboard/admin/academic/class/details/${classId}/`);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+    };
+
+
+    // ---- Academic Year BS Date Pickers ----
+    document.addEventListener('DOMContentLoaded', function () {
+        initNepaliDatePicker('start_date_bs', 'start_date_ad');
+        initNepaliDatePicker('end_date_bs',   'end_date_ad');
+
+        // Convert all AD date-range spans to BS display
+        document.querySelectorAll('.bs-date-range').forEach(function(el) {
+            var startAD = el.getAttribute('data-start-ad');
+            var endAD   = el.getAttribute('data-end-ad');
+            var startBS = window.formatDateToBS(startAD);
+            var endBS   = window.formatDateToBS(endAD);
+            if (startBS && endBS) {
+                el.textContent = startBS + ' \u2192 ' + endBS;
+            }
+        });
+    });
+
+    // Called when the modal re-opens (in case DOM wasn't ready first time)
+    var _yearModalOpen = window.openModal;
+    window.openModal = function(id) {
+        _yearModalOpen(id);
+        if (id === 'modal-year') {
+            // Re-init in case pickers weren't ready on DOMContentLoaded
+            setTimeout(function() {
+                initNepaliDatePicker('start_date_bs', 'start_date_ad');
+                initNepaliDatePicker('end_date_bs',   'end_date_ad');
+            }, 100);
+        }
+    };
+
+    function validateYearForm() {
+        var startAD = document.getElementById('start_date_ad').value;
+        var endAD   = document.getElementById('end_date_ad').value;
+        if (!startAD) {
+            alert('Please select a Start Date from the BS calendar.');
+            return false;
+        }
+        if (!endAD) {
+            alert('Please select an End Date from the BS calendar.');
+            return false;
+        }
+        return true;
+    }
+    // ----------------------------------------
+</script>
 {% endblock %}

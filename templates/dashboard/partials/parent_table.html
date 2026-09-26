@@ -1,0 +1,63 @@
+{% for parent in parents %}
+<tr id="parent-row-{{ parent.id }}" onclick="if(!event.target.closest('.dropdown') && !event.target.closest('button') && !event.target.closest('input[type=checkbox]')) openSidePanel('Parent Profile', '{% url 'dashboard:parent_details_partial' parent.id %}');" class="hover-row" style="cursor: pointer;">
+    <td onclick="event.stopPropagation();">
+        <input type="checkbox" class="parent-checkbox" value="{{ parent.id }}">
+    </td>
+    <td>
+        <div style="font-weight: 600; color: var(--text-primary);">{{ parent.first_name }} {{ parent.last_name }}</div>
+        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">{{ parent.relationship|default:"Guardian" }}</div>
+    </td>
+    <td>
+        <div style="color: var(--text-primary); font-size: 0.9rem;">{{ parent.email|default:"No email" }}</div>
+        <div style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 2px;">{{ parent.phone_number|default:"No phone" }}</div>
+    </td>
+    <td>
+        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+            {% for child in parent.children.all %}
+                <span class="badge" style="background: rgba(59, 130, 246, 0.1); color: #2563eb; width: fit-content; font-size: 0.75rem;">
+                    {{ child.first_name }} {{ child.last_name }} ({{ child.admission_number }})
+                </span>
+            {% empty %}
+                <span style="color: var(--text-secondary); font-size: 0.85rem;">No children linked</span>
+            {% endfor %}
+        </div>
+    </td>
+    <td>
+        {% if parent.user %}
+            {% if parent.user.is_active %}
+                <span class="badge" style="background: rgba(52, 211, 153, 0.2); color: #059669;">Active Account</span>
+            {% else %}
+                <span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #dc2626;">Inactive Account</span>
+            {% endif %}
+        {% else %}
+            <span class="badge" style="background: rgba(156, 163, 175, 0.2); color: #4b5563;">Pending Account</span>
+        {% endif %}
+    </td>
+    <td style="text-align: right;">
+        <div class="dropdown" style="position: relative; display: inline-block;">
+            <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="toggleDropdown('dropdown-{{ parent.id }}'); event.stopPropagation();">
+                Options ▾
+            </button>
+            <div id="dropdown-{{ parent.id }}" class="dropdown-content" style="display: none; position: absolute; right: 0; background: var(--surface-color); min-width: 160px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 8px; border: 1px solid var(--border-color); z-index: 100; text-align: left; padding: 0.5rem 0; margin-top: 0.5rem;">
+                
+                <a href="#" style="display: block; padding: 0.5rem 1rem; text-decoration: none; color: #dc2626; font-size: 0.85rem;" onclick="ModularTable.triggerDelete('{% url 'dashboard:soft_delete_parent' parent.id %}', '{{ parent.first_name }} {{ parent.last_name }}', 'parent-row-{{ parent.id }}'); return false;">Remove Parent</a>
+            </div>
+        </div>
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="5" style="text-align: center; padding: 3rem 1rem; color: var(--text-secondary);">
+        No parents found.
+    </td>
+</tr>
+{% endfor %}
+
+<!-- Pagination Data -->
+<tr id="paginationData" style="display:none;" 
+    data-has-next="{{ parents.has_next|yesno:'true,false' }}" 
+    data-has-prev="{{ parents.has_previous|yesno:'true,false' }}" 
+    data-page="{{ parents.number }}" 
+    data-total-pages="{{ parents.paginator.num_pages }}"
+    data-total-count="{{ parents.paginator.count }}">
+</tr>

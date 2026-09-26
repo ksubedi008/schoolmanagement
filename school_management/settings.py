@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'accounts',
     'dashboard',
     'website',
+    'students',
 ]
 
 # Custom user model

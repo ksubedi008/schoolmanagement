@@ -1,0 +1,104 @@
+<div>
+    <h4 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 0.5rem;">Class Information</h4>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+        <div style="flex: 1; min-width: 150px;">
+            <span style="font-size: 0.85rem; color: var(--text-secondary); display: block;">Name</span>
+            <strong style="color: var(--text-primary);">{{ academic_class.name }}</strong>
+        </div>
+        <div style="flex: 1; min-width: 150px;">
+            <span style="font-size: 0.85rem; color: var(--text-secondary); display: block;">Sections</span>
+            <strong style="color: var(--text-primary);">{{ academic_class.section_set.count }}</strong>
+        </div>
+    </div>
+    
+    <!-- Tab Navigation -->
+    <div style="display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 1rem; overflow-x: auto;">
+        <button class="tab-btn active" onclick="switchClassTab('overview', this)" style="padding: 0.5rem 1rem; border: none; background: none; color: var(--text-primary); border-bottom: 2px solid var(--primary-color); cursor: pointer; font-weight: 500;">Overview</button>
+        <button class="tab-btn" onclick="switchClassTab('students', this, '{% url 'dashboard:class_students_partial' academic_class.id %}')" style="padding: 0.5rem 1rem; border: none; background: none; color: var(--text-secondary); border-bottom: 2px solid transparent; cursor: pointer; font-weight: 500;">Students</button>
+        <button class="tab-btn" onclick="switchClassTab('parents', this, '{% url 'dashboard:class_parents_partial' academic_class.id %}')" style="padding: 0.5rem 1rem; border: none; background: none; color: var(--text-secondary); border-bottom: 2px solid transparent; cursor: pointer; font-weight: 500;">Parents</button>
+        <button class="tab-btn" onclick="switchClassTab('syllabus', this)" style="padding: 0.5rem 1rem; border: none; background: none; color: var(--text-secondary); border-bottom: 2px solid transparent; cursor: pointer; font-weight: 500;">Syllabus</button>
+    </div>
+
+    <!-- Tab 1: Overview (Sections & Teachers) -->
+    <div id="tab-overview" class="tab-content" style="display: block;">
+        <h5 style="font-size: 1rem; color: var(--text-primary); margin-bottom: 1rem;">Sections & Teachers</h5>
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for section in sections %}
+            <div id="section-row-{{ section.id }}" style="border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; background: var(--bg-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h6 style="font-size: 1rem; margin: 0; color: var(--text-primary);">Section {{ section.name }}</h6>
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <label style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Class Teacher</label>
+                    <select onchange="updateClassTeacher({{ section.id }}, this.value, {{ academic_class.id }})" style="width: 100%; padding: 0.4rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-primary); font-size: 0.9rem;">
+                        <option value="">-- No Class Teacher --</option>
+                        {% for teacher in teachers %}
+                        <option value="{{ teacher.id }}" {% if section.class_teacher_id == teacher.id %}selected{% endif %}>{{ teacher.first_name }} {{ teacher.last_name }} ({{ teacher.employee_id }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn" style="padding: 0.25rem; color: var(--text-secondary); background: none; border: none;" onclick="editSection({{ section.id }}, '{{ section.name }}', {{ academic_class.id }}); event.stopPropagation();" title="Edit Section">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </button>
+                    <button class="btn" style="padding: 0.25rem; color: #dc2626; background: none; border: none;" onclick="ModularTable.triggerDelete('{% url 'dashboard:soft_delete_academic' 'section' section.id %}', 'Section {{ section.name }}', 'section-row-{{ section.id }}'); event.stopPropagation();" title="Delete Section">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                </div>
+            </div>
+            {% empty %}
+            <p style="font-size: 0.9rem; color: var(--text-secondary);">No sections configured for this class.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Tab 2: Students -->
+    <div id="tab-students" class="tab-content" style="display: none;">
+        <div id="students-loader" style="text-align: center; padding: 2rem;">
+            <div class="loader-spinner"></div>
+            <p style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.9rem;">Loading students...</p>
+        </div>
+        <div id="students-container"></div>
+    </div>
+
+    <!-- Tab 3: Parents -->
+    <div id="tab-parents" class="tab-content" style="display: none;">
+        <div id="parents-loader" style="text-align: center; padding: 2rem;">
+            <div class="loader-spinner"></div>
+            <p style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.9rem;">Loading parents...</p>
+        </div>
+        <div id="parents-container"></div>
+    </div>
+
+    <!-- Tab 4: Syllabus -->
+    <div id="tab-syllabus" class="tab-content" style="display: none;">
+        <h5 style="font-size: 1rem; color: var(--text-primary); margin-bottom: 0.5rem;">Class Syllabus / Subjects</h5>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">Assign subjects to this class. Changes are saved automatically.</p>
+
+        <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.5rem; background: var(--bg-color);">
+            <form id="subjectsForm">
+                {% for subject in all_subjects %}
+                <div style="padding: 0.5rem; border-bottom: 1px solid var(--border-color);">
+                    <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; margin: 0;">
+                        <input type="checkbox" 
+                               class="subject-checkbox" 
+                               value="{{ subject.id }}" 
+                               {% if subject in class_subjects %}checked{% endif %}
+                               onchange="updateClassSubjects({{ academic_class.id }})"
+                               style="width: 1.2rem; height: 1.2rem; cursor: pointer;">
+                        <div style="display: flex; flex-direction: column;">
+                            <span style="font-weight: 500; color: var(--text-primary);">{{ subject.name }}</span>
+                            {% if subject.code %}<span style="font-size: 0.75rem; color: var(--text-secondary);">Code: {{ subject.code }}</span>{% endif %}
+                        </div>
+                    </label>
+                </div>
+                {% endfor %}
+                {% if not all_subjects %}
+                <div style="padding: 1rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+                    No subjects available in the system.
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</div>

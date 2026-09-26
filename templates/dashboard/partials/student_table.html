@@ -1,0 +1,68 @@
+{% for s in students %}
+<tr id="student-row-{{ s.id }}" onclick="if(!event.target.closest('.dropdown') && !event.target.closest('button') && !event.target.closest('input[type=checkbox]')) openSidePanel('Student Profile', '{% url 'dashboard:student_details_partial' s.id %}');" class="hover-row" style="cursor: pointer;">
+    <td onclick="event.stopPropagation();">
+        <input type="checkbox" class="student-checkbox" value="{{ s.id }}">
+    </td>
+    <td>
+        <div style="font-weight: 600; color: var(--text-primary);">{{ s.first_name }} {{ s.last_name }}</div>
+        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">{{ s.phone_number|default:"No phone" }}</div>
+    </td>
+    <td>
+        <div style="color: var(--text-primary); font-weight: 500;">{{ s.admission_number }}</div>
+        <div style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 2px;">Roll: {{ s.roll_number|default:"—" }}</div>
+    </td>
+    <td>
+        {% if s.current_class %}
+            <div style="font-weight: 500; color: var(--text-primary);">{{ s.current_class.name }}</div>
+            <div style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 2px;">Sec: {{ s.current_section.name|default:"—" }}</div>
+        {% else %}
+            <span class="badge" style="background: rgba(156, 163, 175, 0.2); color: #4b5563;">Unassigned</span>
+        {% endif %}
+    </td>
+    <td>
+        {% if s.gender == 'M' %}Male{% elif s.gender == 'F' %}Female{% elif s.gender == 'O' %}Other{% else %}—{% endif %}
+    </td>
+    <td>
+        {% if s.status == 'ACTIVE' %}
+            <span class="badge" style="background: rgba(52, 211, 153, 0.2); color: #059669;">Active</span>
+        {% elif s.status == 'TRANSFERRED' %}
+            <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #2563eb;">Transferred</span>
+        {% elif s.status == 'WITHDRAWN' %}
+            <span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #d97706;">Withdrawn</span>
+        {% elif s.status == 'GRADUATED' %}
+            <span class="badge" style="background: rgba(139, 92, 246, 0.2); color: #7c3aed;">Graduated</span>
+        {% elif s.status == 'ARCHIVED' %}
+            <span class="badge" style="background: rgba(156, 163, 175, 0.2); color: #4b5563;">Archived</span>
+        {% endif %}
+    </td>
+    <td style="text-align: right;">
+        <div class="dropdown" style="position: relative; display: inline-block;">
+            <button class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" onclick="toggleDropdown('dropdown-{{ s.id }}'); event.stopPropagation();">
+                Options ▾
+            </button>
+            <div id="dropdown-{{ s.id }}" class="dropdown-content" style="display: none; position: absolute; right: 0; background: var(--surface-color); min-width: 160px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 8px; border: 1px solid var(--border-color); z-index: 100; text-align: left; padding: 0.5rem 0; margin-top: 0.5rem;">
+                <a href="#" style="display: block; padding: 0.5rem 1rem; text-decoration: none; color: var(--text-primary); font-size: 0.85rem;" onclick="openEditModal('{{ s.id }}', '{{ s.first_name }}', '{{ s.last_name }}', '{{ s.admission_number }}', '{{ s.roll_number }}', '{{ s.phone_number }}', '{{ s.gender }}', '{{ s.current_class.id|default:"" }}', '{{ s.current_section.id|default:"" }}'); return false;">Edit Info</a>
+                <a href="#" style="display: block; padding: 0.5rem 1rem; text-decoration: none; color: var(--text-primary); font-size: 0.85rem;" onclick="openPromoteModal('{{ s.id }}', '{{ s.first_name }} {{ s.last_name }}'); return false;">Promote / Transfer Class</a>
+                <div style="height: 1px; background: var(--border-color); margin: 0.25rem 0;"></div>
+                <a href="#" style="display: block; padding: 0.5rem 1rem; text-decoration: none; color: var(--text-primary); font-size: 0.85rem;" onclick="openStatusModal('{{ s.id }}', '{{ s.first_name }} {{ s.last_name }}', '{{ s.status }}'); return false;">Change Status</a>
+                <a href="#" style="display: block; padding: 0.5rem 1rem; text-decoration: none; color: #dc2626; font-size: 0.85rem;" onclick="triggerDeleteConfirmation('{{ s.id }}', '{{ s.first_name }} {{ s.last_name }}'); return false;">Delete</a>
+            </div>
+        </div>
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="6" style="text-align: center; padding: 3rem 1rem; color: var(--text-secondary);">
+        No students found matching your criteria.
+    </td>
+</tr>
+{% endfor %}
+
+<!-- Pagination Data injected for JS parsing -->
+<tr id="paginationData" style="display:none;" 
+    data-has-next="{{ students.has_next|yesno:'true,false' }}" 
+    data-has-prev="{{ students.has_previous|yesno:'true,false' }}" 
+    data-page="{{ students.number }}" 
+    data-total-pages="{{ students.paginator.num_pages }}"
+    data-total-count="{{ students.paginator.count }}">
+</tr>

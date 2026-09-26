@@ -6,6 +6,11 @@
     <title>{% block title %}School Management System{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    <!-- Nepali Date Picker v5 -->
+    <link href="https://nepalidatepicker.sajanmaharjan.com.np/v5/nepali.datepicker/css/nepali.datepicker.v5.0.6.min.css" rel="stylesheet" type="text/css"/>
+    <script src="https://nepalidatepicker.sajanmaharjan.com.np/v5/nepali.datepicker/js/nepali.datepicker.v5.0.6.min.js" type="text/javascript"></script>
+    
     <script>
         // Apply theme immediately to prevent flashing
         const savedTheme = localStorage.getItem('theme') || 'light';
@@ -106,16 +111,83 @@
                 </div>
             </header>
 
-            <div class="content-area">
+    <div class="content-area">
                 {% block content %}
                 {% endblock %}
             </div>
         </main>
     </div>
 
+    <!-- Global Master-Detail Side Panel -->
+    <div id="globalSidePanel" class="side-panel">
+        <div class="panel-header">
+            <h3 id="sidePanelTitle" style="font-size: 1.1rem; color: var(--text-primary); margin: 0;">Details</h3>
+            <button onclick="closeSidePanel()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
+        </div>
+        <div id="sidePanelContent" class="panel-content">
+            <!-- Content injected here -->
+        </div>
+    </div>
+
+    <style>
+        .side-panel {
+            position: fixed; top: 0; right: 0; width: 450px; height: 100vh;
+            background: var(--surface-color); box-shadow: -5px 0 25px rgba(0,0,0,0.1);
+            transform: translateX(100%); transition: transform 0.3s ease-in-out;
+            z-index: 2000; display: flex; flex-direction: column;
+            border-left: 1px solid var(--border-color);
+        }
+        .side-panel.open { transform: translateX(0); }
+        .panel-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .panel-content { padding: 1.5rem; overflow-y: auto; flex-grow: 1; position: relative; }
+        
+        .loader-spinner {
+            border: 3px solid rgba(0,0,0,0.1); border-radius: 50%; border-top: 3px solid var(--primary-color);
+            width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 0 auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Highlight hover rows for tables */
+        .hover-row:hover { background: rgba(0,0,0,0.02); }
+        [data-theme="dark"] .hover-row:hover { background: rgba(255,255,255,0.02); }
+        
+        /* Toast Notification */
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: #10b981; color: white; padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateY(100%); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); font-weight: 500; font-size: 0.9rem; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+    </style>
+
+    <!-- Global Delete Confirmation Modal -->
+    <div id="delete-confirmation-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 3000; align-items: center; justify-content: center;">
+        <div class="card" style="width: 100%; max-width: 400px; margin: 1rem; position: relative; text-align: center;">
+            <div style="margin: 0 auto 1.5rem; width: 48px; height: 48px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            </div>
+            <h3 class="card-title" style="margin-bottom: 0.5rem;">Confirm Delete</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                Are you sure you want to remove <strong id="delete-item-name" style="color: var(--text-primary);"></strong>?<br>This action cannot be undone.
+            </p>
+            
+            <input type="hidden" id="delete-api-url">
+            <input type="hidden" id="delete-row-id">
+            
+            <!-- Extra Validation Container (for System Admin soft delete) -->
+            <div id="delete-extra-validation" style="display: none; margin-bottom: 1rem; text-align: left;">
+                <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Type the username to confirm:</label>
+                <input type="text" id="delete-validation-input" class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-primary);" onkeyup="ModularTable.checkValidation(this.value)">
+                <input type="hidden" id="delete-validation-target">
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <button type="button" class="btn btn-outline" style="flex: 1;" onclick="document.getElementById('delete-confirmation-modal').style.display='none'">Cancel</button>
+                <button type="button" class="btn" id="delete-confirm-btn" style="flex: 1; background: #ef4444; color: white;" onclick="ModularTable.executeDelete()">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <script src="{% static 'js/app.js' %}"></script>
     <script>
-        // Set initial icon state based on theme
+        // Theme toggle logic
         document.addEventListener('DOMContentLoaded', () => {
             const currentThemeAttr = document.documentElement.getAttribute('data-theme');
             const moon = document.getElementById('moon-icon');
@@ -126,6 +198,320 @@
                 if(moon) moon.style.display = 'block';
             }
         });
+
+        // 1. Universal Search with Debouncing
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => { clearTimeout(timeout); func(...args); };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // ---- BS/AD Date Conversion Utilities (Bikram Sambat) ----
+        // Converts an AD date string (YYYY-MM-DD) to a formatted BS string.
+        // Depends on the NepaliFunctions global from the nepali-datepicker library.
+        window.formatDateToBS = function(adDateString) {
+            if (!adDateString) return '';
+            try {
+                if (typeof NepaliFunctions === 'undefined') return adDateString;
+                var parts = adDateString.split('-');
+                if (parts.length < 3) return adDateString;
+                var bsObj = NepaliFunctions.AD2BS(adDateString);
+                if (!bsObj || !bsObj.year) return adDateString;
+                var y = bsObj.year;
+                var m = String(bsObj.month).padStart(2, '0');
+                var d = String(bsObj.day).padStart(2, '0');
+                return y + '-' + m + '-' + d + ' (BS)';
+            } catch(e) {
+                return adDateString;
+            }
+        };
+
+        window.initNepaliDatePicker = function(bsInputId, adHiddenId, containerId) {
+            var bsInput = document.getElementById(bsInputId);
+            var adInput = document.getElementById(adHiddenId);
+            if (!bsInput || !adInput) return;
+            if (typeof NepaliFunctions === 'undefined') {
+                // Library not loaded yet; will be retried
+                setTimeout(function() { window.initNepaliDatePicker(bsInputId, adHiddenId, containerId); }, 300);
+                return;
+            }
+            
+            function syncToAD() {
+                var bsVal = bsInput.value;
+                if (!bsVal) { adInput.value = ''; return; }
+                try {
+                    // Try parsing manually typed date
+                    if (bsVal.match(/^\d{4}-\d{1,2}-\d{1,2}$/)) {
+                        var adObj = NepaliFunctions.BS2AD(bsVal);
+                        if (adObj && adObj.year) {
+                            var y = adObj.year;
+                            var m = String(adObj.month).padStart(2, '0');
+                            var d = String(adObj.day).padStart(2, '0');
+                            adInput.value = y + '-' + m + '-' + d;
+                        }
+                    }
+                } catch(e) { adInput.value = ''; }
+            }
+            
+            var opts = {
+                onChange: syncToAD
+            };
+            if (containerId) opts.container = containerId;
+            bsInput.NepaliDatePicker(opts);
+            
+            // Allow manual typing to also update hidden AD fields
+            bsInput.addEventListener('change', syncToAD);
+            bsInput.addEventListener('blur', syncToAD);
+        };
+        // -------------------------------------------------------
+
+        function initializeSearch(inputId, tableId) {
+            const input = document.getElementById(inputId);
+            const table = document.getElementById(tableId);
+            if (!input || !table) return;
+
+            const executeSearch = debounce(() => {
+                const filter = input.value.toLowerCase();
+                const trs = table.getElementsByTagName('tr');
+                
+                // Skip header row
+                for (let i = 1; i < trs.length; i++) {
+                    const rowText = trs[i].textContent || trs[i].innerText;
+                    if (rowText.toLowerCase().indexOf(filter) > -1) {
+                        trs[i].style.display = "";
+                    } else {
+                        trs[i].style.display = "none";
+                    }
+                }
+            }, 300);
+
+            input.addEventListener('keyup', executeSearch);
+        }
+
+        // 2. Master-Detail Panel Logic
+        function openSidePanel(title, fetchUrl) {
+            const panel = document.getElementById('globalSidePanel');
+            const titleEl = document.getElementById('sidePanelTitle');
+            const contentEl = document.getElementById('sidePanelContent');
+            
+            titleEl.textContent = title;
+            panel.classList.add('open');
+            
+            // Skeleton / Spinner
+            contentEl.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">
+                    <div class="loader-spinner" style="margin-bottom: 1rem;"></div>
+                    <p style="font-size: 0.9rem;">Fetching details...</p>
+                </div>
+            `;
+            
+            // Graceful Fetch
+            fetch(fetchUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.text();
+                })
+                .then(html => {
+                    contentEl.innerHTML = html;
+                })
+                .catch(error => {
+                    contentEl.innerHTML = `
+                        <div style="padding: 1.5rem; border: 1px solid #fca5a5; background: #fef2f2; border-radius: 8px; color: #ef4444;">
+                            <h4 style="margin: 0 0 0.5rem 0; font-size: 1rem;">Failed to load data</h4>
+                            <p style="margin: 0; font-size: 0.85rem;">There was a problem connecting to the server. Please try again later.</p>
+                            <button class="btn btn-outline" style="margin-top: 1rem; font-size: 0.8rem; border-color: #ef4444; color: #ef4444;" onclick="openSidePanel('${title}', '${fetchUrl}')">Retry</button>
+                        </div>
+                    `;
+                });
+        }
+
+        function closeSidePanel() {
+            document.getElementById('globalSidePanel').classList.remove('open');
+        }
+
+        // 3. Modular AJAX Table Loader & Soft Delete
+        const ModularTable = {
+            currentPage: 1,
+            apiUrl: '',
+            tableBodyId: '',
+            currentFetchController: null,
+            
+            init: function(apiUrl, tableBodyId, searchInputId, filterClassNames) {
+                this.apiUrl = apiUrl;
+                this.tableBodyId = tableBodyId;
+                this.currentPage = 1;
+                
+                const searchInput = document.getElementById(searchInputId);
+                if (searchInput) {
+                    searchInput.addEventListener('input', debounce(() => {
+                        this.currentPage = 1;
+                        this.load();
+                    }, 300));
+                }
+                
+                const filters = document.querySelectorAll(filterClassNames);
+                filters.forEach(f => {
+                    f.addEventListener('change', () => {
+                        this.currentPage = 1;
+                        this.load();
+                    });
+                });
+                
+                this.load();
+            },
+            
+            load: function() {
+                const loader = document.getElementById('tableLoader');
+                if (loader) loader.style.display = 'flex';
+                
+                if (this.currentFetchController) {
+                    this.currentFetchController.abort();
+                }
+                this.currentFetchController = new AbortController();
+                
+                const url = new URL(this.apiUrl, window.location.origin);
+                url.searchParams.append('page', this.currentPage);
+                
+                const searchInput = document.getElementById('ajaxSearchInput');
+                if (searchInput) url.searchParams.append('q', searchInput.value);
+                
+                const filters = document.querySelectorAll('.ajax-filter');
+                filters.forEach(f => {
+                    if (f.name && f.value) url.searchParams.append(f.name, f.value);
+                });
+                
+                fetch(url, { signal: this.currentFetchController.signal })
+                    .then(res => res.text())
+                    .then(html => {
+                        document.getElementById(this.tableBodyId).innerHTML = html;
+                        this.parsePagination();
+                    })
+                    .catch(err => {
+                        if (err.name === 'AbortError') return;
+                        console.error(err);
+                    })
+                    .finally(() => {
+                        if (loader) loader.style.display = 'none';
+                    });
+            },
+            
+            parsePagination: function() {
+                const meta = document.getElementById('paginationData');
+                const info = document.getElementById('paginationInfo');
+                const buttons = document.getElementById('paginationButtons');
+                if (!meta || !info || !buttons) return;
+                
+                const hasNext = meta.getAttribute('data-has-next') === 'true';
+                const hasPrev = meta.getAttribute('data-has-prev') === 'true';
+                const totalPages = parseInt(meta.getAttribute('data-total-pages')) || 1;
+                const totalCount = parseInt(meta.getAttribute('data-total-count')) || 0;
+                const page = parseInt(meta.getAttribute('data-page')) || 1;
+                
+                info.innerText = `Showing ${totalCount} records (Page ${page} of ${totalPages})`;
+                
+                let btnHtml = '';
+                if (hasPrev) btnHtml += `<button class="btn btn-outline" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;" onclick="ModularTable.changePage(${page - 1})">Previous</button>`;
+                if (hasNext) btnHtml += `<button class="btn btn-outline" style="padding: 0.25rem 0.75rem; font-size: 0.85rem;" onclick="ModularTable.changePage(${page + 1})">Next</button>`;
+                buttons.innerHTML = btnHtml;
+            },
+            
+            changePage: function(newPage) {
+                this.currentPage = newPage;
+                this.load();
+            },
+
+            triggerDelete: function(deleteApiUrl, itemName, rowId, validationTarget = null) {
+                document.getElementById('delete-api-url').value = deleteApiUrl;
+                document.getElementById('delete-row-id').value = rowId;
+                document.getElementById('delete-item-name').innerText = itemName;
+                
+                const valContainer = document.getElementById('delete-extra-validation');
+                const confirmBtn = document.getElementById('delete-confirm-btn');
+                const valInput = document.getElementById('delete-validation-input');
+                
+                if (validationTarget) {
+                    valContainer.style.display = 'block';
+                    document.getElementById('delete-validation-target').value = validationTarget;
+                    valInput.value = '';
+                    confirmBtn.disabled = true;
+                    confirmBtn.style.opacity = '0.5';
+                } else {
+                    valContainer.style.display = 'none';
+                    confirmBtn.disabled = false;
+                    confirmBtn.style.opacity = '1';
+                }
+                
+                document.getElementById('delete-confirmation-modal').style.display = 'flex';
+            },
+
+            checkValidation: function(value) {
+                const target = document.getElementById('delete-validation-target').value;
+                const confirmBtn = document.getElementById('delete-confirm-btn');
+                if (value === target) {
+                    confirmBtn.disabled = false;
+                    confirmBtn.style.opacity = '1';
+                } else {
+                    confirmBtn.disabled = true;
+                    confirmBtn.style.opacity = '0.5';
+                }
+            },
+
+            executeDelete: function() {
+                const url = document.getElementById('delete-api-url').value;
+                const rowId = document.getElementById('delete-row-id').value;
+                
+                const csrfNode = document.querySelector('[name=csrfmiddlewaretoken]');
+                if (!csrfNode) { alert('CSRF token missing'); return; }
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfNode.value,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const row = document.getElementById(rowId);
+                        if (row) row.remove();
+                        document.getElementById('delete-confirmation-modal').style.display = 'none';
+                        Toast.show('Item successfully deleted.');
+                        
+                        if (data.warning) {
+                            setTimeout(() => Toast.show(data.warning), 1500);
+                        }
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(err => console.error(err));
+            }
+        };
+
+        const Toast = {
+            show: function(message) {
+                let container = document.getElementById('toast-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'toast-container';
+                    document.body.appendChild(container);
+                }
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.innerText = message;
+                container.appendChild(toast);
+                
+                setTimeout(() => toast.classList.add('show'), 10);
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+        };
     </script>
 </body>
 </html>

@@ -121,34 +121,58 @@ def admin_students(request):
     if request.method == 'POST':
         action = request.POST.get('action')
         
+        error_message = None
         if action == 'create':
-            Student.objects.create(
-                first_name=request.POST.get('first_name'),
-                last_name=request.POST.get('last_name'),
-                admission_number=request.POST.get('admission_number'),
-                roll_number=request.POST.get('roll_number', ''),
-                current_class_id=request.POST.get('current_class') or None,
-                current_section_id=request.POST.get('current_section') or None,
-                phone_number=request.POST.get('phone_number', ''),
-                gender=request.POST.get('gender', ''),
-                status='ACTIVE'
-            )
+            roll = request.POST.get('roll_number', '').strip()
+            cid = request.POST.get('current_class') or None
+            sid = request.POST.get('current_section') or None
+            
+            # Check uniqueness
+            is_unique = True
+            if roll and cid and sid:
+                is_unique = not Student.objects.filter(roll_number=roll, current_class_id=cid, current_section_id=sid, is_deleted=False).exists()
+                
+            if is_unique:
+                Student.objects.create(
+                    first_name=request.POST.get('first_name'),
+                    last_name=request.POST.get('last_name'),
+                    admission_number=request.POST.get('admission_number'),
+                    roll_number=roll,
+                    current_class_id=cid,
+                    current_section_id=sid,
+                    phone_number=request.POST.get('phone_number', ''),
+                    gender=request.POST.get('gender', ''),
+                    status='ACTIVE'
+                )
+            else:
+                error_message = f"Roll number {roll} already exists in this section."
             
         elif action == 'edit':
             student_id = request.POST.get('student_id')
-            try:
-                student = Student.objects.get(id=student_id)
-                student.first_name = request.POST.get('first_name')
-                student.last_name = request.POST.get('last_name')
-                student.admission_number = request.POST.get('admission_number')
-                student.roll_number = request.POST.get('roll_number', '')
-                student.current_class_id = request.POST.get('current_class') or None
-                student.current_section_id = request.POST.get('current_section') or None
-                student.phone_number = request.POST.get('phone_number', '')
-                student.gender = request.POST.get('gender', '')
-                student.save()
-            except Student.DoesNotExist:
-                pass
+            roll = request.POST.get('roll_number', '').strip()
+            cid = request.POST.get('current_class') or None
+            sid = request.POST.get('current_section') or None
+            
+            is_unique = True
+            if roll and cid and sid:
+                is_unique = not Student.objects.filter(roll_number=roll, current_class_id=cid, current_section_id=sid, is_deleted=False).exclude(id=student_id).exists()
+            
+            if is_unique:
+                try:
+                    student = Student.objects.get(id=student_id)
+                    student.first_name = request.POST.get('first_name')
+                    student.last_name = request.POST.get('last_name')
+                    student.admission_number = request.POST.get('admission_number')
+                    student.roll_number = roll
+                    student.current_class_id = cid
+                    student.current_section_id = sid
+                    student.phone_number = request.POST.get('phone_number', '')
+                    student.gender = request.POST.get('gender', '')
+                    student.save()
+                except Student.DoesNotExist:
+                    pass
+            else:
+                error_message = f"Roll number {roll} already exists in this section."
                 
         elif action == 'change_status':
             student_id = request.POST.get('student_id')
@@ -185,6 +209,7 @@ def admin_students(request):
     
     context = {
         'classes': classes,
+        'error_message': locals().get('error_message', None)
     }
     return render(request, 'dashboard/modules/admin_students.html', context)
 
@@ -244,6 +269,17 @@ def promote_transfer_student(request, pk):
             
             if not class_id or not section_id:
                 return JsonResponse({'success': False, 'error': 'Class and Section are required.'}, status=400)
+                
+            if student.roll_number:
+                is_unique = not Student.objects.filter(
+                    roll_number=student.roll_number, 
+                    current_class_id=class_id, 
+                    current_section_id=section_id, 
+                    is_deleted=False
+                ).exclude(id=student.id).exists()
+                
+                if not is_unique:
+                    return JsonResponse({'success': False, 'error': f'Roll number {student.roll_number} already exists in the target section.'}, status=400)
                 
             student.current_class_id = class_id
             student.current_section_id = section_id

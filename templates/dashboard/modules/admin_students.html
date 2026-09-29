@@ -5,6 +5,11 @@
 
 {% block content %}
 <div class="card">
+    {% if error_message %}
+    <div style="background-color: #fee2e2; border-left: 4px solid #ef4444; color: #b91c1c; padding: 1rem; margin-bottom: 1.5rem; border-radius: 4px; font-weight: 500;">
+        {{ error_message }}
+    </div>
+    {% endif %}
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
         <div>
             <h3 class="card-title">Student Directory</h3>

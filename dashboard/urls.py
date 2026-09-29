@@ -15,6 +15,7 @@ urlpatterns = [
     path('admin/students/details/<int:pk>/', views.student_details_partial, name='student_details_partial'),
     path('admin/students/table/', views.student_table_partial, name='student_table_partial'),
     path('admin/students/delete/<int:pk>/', views.soft_delete_student, name='soft_delete_student'),
+    path('admin/students/promote/<int:pk>/', views.promote_transfer_student, name='promote_transfer_student'),
     
     path('admin/teachers/table/', views.teacher_table_partial, name='teacher_table_partial'),
     path('admin/teachers/details/<int:pk>/', views.teacher_details_partial, name='teacher_details_partial'),

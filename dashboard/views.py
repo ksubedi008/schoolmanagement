@@ -157,6 +157,15 @@ def admin_students(request):
                 student = Student.objects.get(id=student_id)
                 student.status = new_status
                 student.save()
+                
+                # Also update associated user account if it exists
+                if student.user:
+                    if new_status == 'ACTIVE':
+                        student.user.is_active = True
+                    else:
+                        student.user.is_active = False
+                    student.user.save()
+                    
             except Student.DoesNotExist:
                 pass
                 
@@ -221,6 +230,30 @@ def soft_delete_student(request, pk):
             return JsonResponse({'success': True})
         except Student.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Student not found'}, status=404)
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
+
+@login_required
+def promote_transfer_student(request, pk):
+    if request.method == 'POST':
+        if not (request.user.is_superuser or request.user.has_scope_permission('dashboard.admin.view')):
+            return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+        try:
+            student = Student.objects.get(pk=pk, is_deleted=False)
+            class_id = request.POST.get('class_id')
+            section_id = request.POST.get('section_id')
+            
+            if not class_id or not section_id:
+                return JsonResponse({'success': False, 'error': 'Class and Section are required.'}, status=400)
+                
+            student.current_class_id = class_id
+            student.current_section_id = section_id
+            student.save()
+            
+            return JsonResponse({'success': True})
+        except Student.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Student not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
 
 @login_required

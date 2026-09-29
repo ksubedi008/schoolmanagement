@@ -226,7 +226,157 @@
     </div>
 </div>
 
-<!-- Edit, Status, Promote Modals omitted for simplicity of POC update, but they work exactly the same via SSR -->
+<!-- Promote/Transfer Modal -->
+<div id="promote-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 100%; max-width: 500px; margin: 1rem; position: relative;">
+        <button onclick="closeModal('promote-modal')" style="position: absolute; right: 1.5rem; top: 1.5rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
+        <h3 class="card-title" style="margin-bottom: 1.5rem;">Promote / Transfer Student</h3>
+        
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+            Transfer <strong id="promote-student-name" style="color: var(--text-primary);"></strong> to a new class or section.
+        </p>
+
+        <form id="promoteForm" onsubmit="submitPromoteForm(event)">
+            <input type="hidden" id="promote-student-id">
+            
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Select New Class <span style="color: red;">*</span></label>
+                <select id="promoteClass" required class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-primary);" onchange="updatePromoteSections()">
+                    <option value="">-- Select Class --</option>
+                    {% for c in classes %}
+                        <option value="{{ c.id }}">{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Select New Section <span style="color: red;">*</span></label>
+                <select id="promoteSection" required class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-primary);">
+                    <option value="">-- Select Section --</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button type="button" class="btn btn-outline" onclick="closeModal('promote-modal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Transfer Student</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Student Modal -->
+<div id="edit-student-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 100%; max-width: 600px; margin: 1rem; position: relative; max-height: 90vh; overflow-y: auto;">
+        <button onclick="closeModal('edit-student-modal')" style="position: absolute; right: 1.5rem; top: 1.5rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
+        <h3 class="card-title" style="margin-bottom: 1.5rem;">Edit Student</h3>
+        
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="edit">
+            <input type="hidden" name="student_id" id="edit_student_id">
+            
+            <h4 style="font-size: 0.9rem; color: var(--primary-color); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Personal Information</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div class="form-group">
+                    <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-secondary);">First Name <span style="color: red;">*</span></label>
+                    <input type="text" name="first_name" id="edit_first_name" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-primary);">
+                </div>
+                <div class="form-group">
+                    <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Last Name <span style="color: red;">*</span></label>
+                    <input type="text" name="last_name" id="edit_last_name" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-primary);">
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                <div class="form-group">
+                    <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Gender</label>
+                    <select name="gender" id="edit_gender" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-primary);">
+                        <option value="">-- Select --</option>
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                        <option value="O">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Phone / Contact</label>
+                    <input type="text" name="phone_number" id="edit_phone_number" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-primary);">
+                </div>
+            </div>
+
+            <h4 style="font-size: 0.9rem; color: var(--primary-color); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Academic Details</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div class="form-group">
+                    <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Admission No. <span style="color: red;">*</span></label>
+                    <input type="text" name="admission_number" id="edit_admission_number" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-primary);">
+                </div>
+                <div class="form-group">
+                    <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Roll Number</label>
+                    <input type="text" name="roll_number" id="edit_roll_number" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-primary);">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                <div class="form-group">
+                    <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Class</label>
+                    <select name="current_class" id="edit_current_class" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-primary);" onchange="updateEditSections()">
+                        <option value="">-- Assign Class --</option>
+                        {% for c in classes %}
+                        <option value="{{ c.id }}">{{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Section</label>
+                    <select name="current_section" id="edit_current_section" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-primary);">
+                        <option value="">-- Assign Section --</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button type="button" class="btn btn-outline" onclick="closeModal('edit-student-modal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Change Status Modal -->
+<div id="status-student-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 100%; max-width: 400px; margin: 1rem; position: relative;">
+        <button onclick="closeModal('status-student-modal')" style="position: absolute; right: 1.5rem; top: 1.5rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">&times;</button>
+        <h3 class="card-title" style="margin-bottom: 1.5rem;">Change Status</h3>
+        
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+            Update status for <strong id="status-student-name" style="color: var(--text-primary);"></strong>.
+        </p>
+
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="change_status">
+            <input type="hidden" name="student_id" id="status_student_id">
+            
+            <div class="form-group" style="margin-bottom: 2rem;">
+                <label style="display: block; font-size: 0.85rem; margin-bottom: 0.5rem; color: var(--text-secondary);">Status <span style="color: red;">*</span></label>
+                <select name="status" id="status_dropdown" required class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-primary);">
+                    <option value="ACTIVE">Active</option>
+                    <option value="TRANSFERRED">Transferred</option>
+                    <option value="WITHDRAWN">Withdrawn</option>
+                    <option value="GRADUATED">Graduated</option>
+                    <option value="ARCHIVED">Archived</option>
+                </select>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                    Note: Changing status to anything other than "Active" will automatically disable the student's login account.
+                </p>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button type="button" class="btn btn-outline" onclick="closeModal('status-student-modal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Update Status</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <!-- NEW: Delete Confirmation Modal -->
 <div id="delete-confirmation-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
@@ -423,6 +573,137 @@
         if(classId && sectionId) {
             window.location.href = `/dashboard/admin/students/bulk-assign-electives/${classId}/${sectionId}/`;
         }
+    }
+
+    // 5. Promote Modal Logic
+    function openPromoteModal(studentId, studentName) {
+        document.getElementById('promote-student-id').value = studentId;
+        document.getElementById('promote-student-name').innerText = studentName;
+        document.getElementById('promoteClass').value = '';
+        document.getElementById('promoteSection').innerHTML = '<option value="">-- Select Section --</option>';
+        openModal('promote-modal');
+    }
+
+    function updatePromoteSections() {
+        const classId = document.getElementById('promoteClass').value;
+        const sectionSelect = document.getElementById('promoteSection');
+        sectionSelect.innerHTML = '<option value="">Loading...</option>';
+        
+        if (!classId) {
+            sectionSelect.innerHTML = '<option value="">-- Select Section --</option>';
+            return;
+        }
+
+        fetch(`/dashboard/api/sections/?class_id=${classId}`)
+            .then(res => res.json())
+            .then(data => {
+                sectionSelect.innerHTML = '<option value="">-- Select Section --</option>';
+                data.sections.forEach(sec => {
+                    const option = document.createElement('option');
+                    option.value = sec.id;
+                    option.textContent = sec.name;
+                    sectionSelect.appendChild(option);
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                sectionSelect.innerHTML = '<option value="">Error loading sections</option>';
+            });
+    }
+
+    function submitPromoteForm(event) {
+        event.preventDefault();
+        const studentId = document.getElementById('promote-student-id').value;
+        const classId = document.getElementById('promoteClass').value;
+        const sectionId = document.getElementById('promoteSection').value;
+        
+        const formData = new FormData();
+        formData.append('class_id', classId);
+        formData.append('section_id', sectionId);
+        
+        fetch(`/dashboard/admin/students/promote/${studentId}/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                closeModal('promote-modal');
+                showToast("Student promoted/transferred successfully!");
+                loadTableData();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Network error.");
+        });
+    }
+
+    // 6. Edit & Status Modals
+    function openEditModal(id, firstName, lastName, admNo, rollNo, phone, gender, classId, sectionId) {
+        document.getElementById('edit_student_id').value = id;
+        document.getElementById('edit_first_name').value = firstName;
+        document.getElementById('edit_last_name').value = lastName;
+        document.getElementById('edit_admission_number').value = admNo;
+        document.getElementById('edit_roll_number').value = rollNo !== 'None' ? rollNo : '';
+        document.getElementById('edit_phone_number').value = phone !== 'None' ? phone : '';
+        document.getElementById('edit_gender').value = gender !== 'None' ? gender : '';
+        document.getElementById('edit_current_class').value = classId !== 'None' ? classId : '';
+        
+        const sectionSelect = document.getElementById('edit_current_section');
+        sectionSelect.innerHTML = '<option value="">-- Assign Section --</option>';
+        if (classId && classId !== 'None') {
+            fetch(`/dashboard/api/sections/?class_id=${classId}`)
+                .then(r => r.json())
+                .then(data => {
+                    data.sections.forEach(sec => {
+                        const opt = document.createElement('option');
+                        opt.value = sec.id;
+                        opt.textContent = sec.name;
+                        if (sec.id == sectionId) opt.selected = true;
+                        sectionSelect.appendChild(opt);
+                    });
+                });
+        }
+        
+        closeDropdowns();
+        openModal('edit-student-modal');
+    }
+
+    function updateEditSections() {
+        const classId = document.getElementById('edit_current_class').value;
+        const sectionSelect = document.getElementById('edit_current_section');
+        sectionSelect.innerHTML = '<option value="">-- Assign Section --</option>';
+        if (!classId) return;
+
+        fetch(`/dashboard/api/sections/?class_id=${classId}`)
+            .then(r => r.json())
+            .then(data => {
+                data.sections.forEach(sec => {
+                    const opt = document.createElement('option');
+                    opt.value = sec.id;
+                    opt.textContent = sec.name;
+                    sectionSelect.appendChild(opt);
+                });
+            });
+    }
+
+    function openStatusModal(id, name, status) {
+        document.getElementById('status_student_id').value = id;
+        document.getElementById('status-student-name').innerText = name;
+        document.getElementById('status_dropdown').value = status;
+        closeDropdowns();
+        openModal('status-student-modal');
+    }
+
+    function closeDropdowns() {
+        var dropdowns = document.getElementsByClassName("dropdown-content");
+        for (var i = 0; i < dropdowns.length; i++) dropdowns[i].style.display = 'none';
     }
 
     // Utilities
